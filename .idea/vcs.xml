@@ -3,5 +3,7 @@
   <component name="VcsDirectoryMappings">
     <mapping directory="" vcs="Git" />
     <mapping directory="$PROJECT_DIR$" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/alert-data-set" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/alert-data-set/aecid-alert-aggregation" vcs="Git" />
   </component>
 </project>
