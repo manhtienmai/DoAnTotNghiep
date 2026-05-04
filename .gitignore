@@ -1,2 +1,6 @@
 data
 venv/
+# Bỏ qua các file dữ liệu quá nặng
+alert-data-set/alerts_raw/
+alert-data-set/alerts_filtered/
+alert-data-set/alerts_csv/*.zip
