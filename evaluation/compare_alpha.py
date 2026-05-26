@@ -13,7 +13,6 @@ from evaluation.compare_versions import (
 
 DEFAULT_ALPHAS = [0.0, 0.25, 0.5, 0.75, 1.0]
 
-
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('--alphas', type=float, nargs='+', default=DEFAULT_ALPHAS)
@@ -51,7 +50,6 @@ def main():
                      f'deltas={DEFAULT_DELTAS}.')
 
     print(f'\nTổng thời gian: {time.time() - t_start:.1f} s')
-
 
 if __name__ == '__main__':
     main()

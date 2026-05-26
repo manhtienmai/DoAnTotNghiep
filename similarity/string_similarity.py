@@ -2,17 +2,17 @@ import re
 from functools import lru_cache
 import pylcs
 
-# === CẤU HÌNH ===
 MIN_LENGTH_THRESHOLD = 10
 MAX_LENGTH_THRESHOLD = 500
 ALPHA = 0.5
 
-TOKEN_DELIMITERS = r'[\s\[\]\(\)\{\}:;,="\'/\\|<>@#$%^&*!?+\-]+'
-_TOKEN_RE = re.compile(TOKEN_DELIMITERS)
-
+_TOKEN_RE = re.compile(
+    r'\b(?:\d{1,3}\.){3}\d{1,3}\b'
+    r'|[a-zA-Z]+'
+    r'|\d+(?:\.\d+)*'
+)
 
 def sim_lcs(s1, s2):
-    """LCS chuẩn dùng pylcs (C extension). Normalize bằng max(|s1|, |s2|)."""
     if s1 == s2:
         return 1.0
     if not s1 or not s2:
@@ -20,16 +20,14 @@ def sim_lcs(s1, s2):
     lcs_len = pylcs.lcs_sequence_length(s1, s2)
     return lcs_len / max(len(s1), len(s2))
 
-
 def sim_jaccard(s1, s2):
-    """Jaccard token similarity."""
     if s1 == s2:
         return 1.0
     if not s1 or not s2:
         return 0.0
 
-    tokens_a = set(t for t in _TOKEN_RE.split(s1) if t)
-    tokens_b = set(t for t in _TOKEN_RE.split(s2) if t)
+    tokens_a = set(_TOKEN_RE.findall(s1.lower()))
+    tokens_b = set(_TOKEN_RE.findall(s2.lower()))
 
     if not tokens_a and not tokens_b:
         return 1.0
@@ -41,9 +39,7 @@ def sim_jaccard(s1, s2):
 
     return len(intersection) / len(union)
 
-
 def string_similarity(s1, s2, alpha=None):
-    """Phép đo tương đồng kết hợp LCS + Jaccard."""
     if alpha is None:
         alpha = ALPHA
 
@@ -55,12 +51,10 @@ def string_similarity(s1, s2, alpha=None):
     if len(s1) <= MAX_LENGTH_THRESHOLD and len(s2) <= MAX_LENGTH_THRESHOLD:
         return _cached_similarity(s1, s2, alpha)
     else:
-        # Chuỗi quá dài — không cache để tránh phình memory
         return _compute_similarity(s1, s2, alpha)
 
 
 def _compute_similarity(s1, s2, alpha):
-    """Tính similarity, skip nhánh không cần thiết theo alpha."""
     if alpha == 0.0:
         return sim_jaccard(s1, s2)
     if alpha == 1.0:
@@ -70,7 +64,6 @@ def _compute_similarity(s1, s2, alpha):
 
 @lru_cache(maxsize=100000)
 def _cached_similarity(s1, s2, alpha):
-    """Phiên bản có cache — gọi qua _compute_similarity để dùng chung logic skip."""
     return _compute_similarity(s1, s2, alpha)
 
 

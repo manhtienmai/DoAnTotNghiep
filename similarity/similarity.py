@@ -3,7 +3,6 @@ from collections import Counter
 from merging.objects import Mergelist
 from merging.objects import Wildcard
 import editdistance
-from .string_similarity import should_use_string_similarity, string_similarity
 
 
 def get_json_similarity(a, b, w=None):
@@ -52,14 +51,8 @@ def get_dict_similarity(a, b, w=None):
                     mat = 1
                 else:
                     mis = max(weight(a[key], a_type), weight(b[key], b_type))
-            # elif a[key] == b[key]:
-            #   mat = 1
             elif a[key] == b[key]:
                 mat = 1
-            elif should_use_string_similarity(a[key], b[key]):
-                sim = string_similarity(str(a[key]), str(b[key]))
-                mat = sim
-                mis = 1 - mat
             else:
                 mis = 1
         else:

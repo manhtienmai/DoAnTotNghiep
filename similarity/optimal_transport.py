@@ -1,5 +1,6 @@
 import numpy as np
 from similarity.similarity import get_json_similarity
+
 EPSILON = 0.1
 MAX_ITER = 100
 MAX_PRODUCT = 50_000
@@ -9,8 +10,7 @@ def get_group_similarity_ot(group_a, group_b,
                             w=None,
                             min_alert_match_similarity=0.0,
                             epsilon=None,
-                            max_iter=None,
-                            partial=False):
+                            max_iter=None,):
     if epsilon is None:
         epsilon = EPSILON
     if max_iter is None:
@@ -27,7 +27,6 @@ def get_group_similarity_ot(group_a, group_b,
     if min(m, n) / max(m, n) < early_stopping_threshold:
         return 0.0
 
-    # 1. Cost matrix: C[i, j] = 1 - sim(a_i, b_j)
     C = np.empty((m, n), dtype=np.float64)
     for i in range(m):
         a_d = alerts_a[i].d
@@ -35,10 +34,11 @@ def get_group_similarity_ot(group_a, group_b,
             s = get_json_similarity(a_d, alerts_b[j].d, w)
             if s < min_alert_match_similarity:
                 s = 0.0
-            C[i, j] = 1.0 - s
+            C[i, j] = 1.0 - s  #   - Cost matrix C[i,j] = 1 - sim(a_i, b_j).
 
-    # 2. Sinkhorn iteration
-    a = np.full(m, 1.0 / m, dtype=np.float64)
+    # 2. Sinkhorn iterations
+    # Marginals: uniform trên mỗi group
+    a = np.full(m, 1.0 / m, dtype=np.float64)   #Mỗi group A, B là một phân phối uniform trên các alert
     b = np.full(n, 1.0 / n, dtype=np.float64)
     K = np.exp(-C / epsilon)
     u = np.ones(m, dtype=np.float64)
@@ -47,7 +47,6 @@ def get_group_similarity_ot(group_a, group_b,
         u = a / (K @ v + 1e-30)
         v = b / (K.T @ u + 1e-30)
 
-    # Tính Transport plan
     T = u[:, None] * K * v[None, :]
 
     transport_cost = float(np.sum(T * C))

@@ -28,7 +28,6 @@ def run_one(host, version, pair_strategy, alpha, epsilon, delta, threshold):
         'deltas': [delta],
         'threshold': threshold,
         'pair_strategy': pair_strategy,
-        'seed': 42,
     }
     if alpha is not None:
         cfg['alpha'] = alpha
@@ -80,7 +79,6 @@ def main():
             row.append(mean_val)
         rows.append(row)
 
-    # Dòng Mean ± SD
     summary = ['Mean ± SD', '—']
     for label, *_ in CONFIGS:
         vals = per_config_values[label]
