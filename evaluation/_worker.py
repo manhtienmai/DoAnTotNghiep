@@ -50,14 +50,14 @@ def main():
     pair_strategy = config.get('pair_strategy', 'best')
 
     if pair_strategy == 'ot':
-        try:
-            from similarity import optimal_transport as ot
-            if 'epsilon' in config and config['epsilon'] is not None:
-                ot.EPSILON = config['epsilon']
-            if 'max_iter' in config and config['max_iter'] is not None:
-                ot.MAX_ITER = config['max_iter']
-        except Exception as e:
-            print(f'[worker] WARNING: cannot patch optimal_transport ({e})', file=sys.stderr)
+        from similarity import optimal_transport as ot, similarity as _sim
+        if config.get('epsilon') is not None: ot.EPSILON = config['epsilon']
+        if config.get('max_iter') is not None: ot.MAX_ITER = config['max_iter']
+        _sim.get_group_similarity = lambda ga, gb, **kw: ot.get_group_similarity_ot(
+            ga, gb,
+            early_stopping_threshold=kw.get('early_stopping_threshold', 0.0),
+            w=kw.get('w'),
+            min_alert_match_similarity=kw.get('min_alert_match_similarity', 0.0)) or 0.0
 
     from preprocessing import label as lab
     from preprocessing import read_input
@@ -105,7 +105,6 @@ def main():
                     min_val_occurrence=min_val_occurrence,
                     w=w,
                     alignment_weight=alignment_weight,
-                    pair_strategy=pair_strategy,
                 )
                 t3 = time.perf_counter()
                 bag_time += (t2 - t1)
@@ -237,7 +236,9 @@ def main():
         'cache_info': cache_info,
     }
 
+    print('===RESULT_BEGIN===')
     print(json.dumps(result))
+    print('===RESULT_END===')
 
 if __name__ == '__main__':
     main()
